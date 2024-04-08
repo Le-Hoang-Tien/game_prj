@@ -17,8 +17,8 @@ struct ScrollingBackground {
     }
 
     void scroll(int distance) {
-        scrollingOffset -= distance;
-        if( scrollingOffset < 0 ) { scrollingOffset = width; }
+        scrollingOffset += distance;
+        if( scrollingOffset >=height) { scrollingOffset = 0; }
     }
 };
 
@@ -77,16 +77,24 @@ struct Graphics {
         return texture;
     }
 
-    void renderTexture(SDL_Texture *texture, int x, int y)
-    {
-        SDL_Rect dest;
+void renderTexture(SDL_Texture *texture, int x, int y, int width = 0, int height = 0)
+{
+    SDL_Rect dest;
+    dest.x = x;
+    dest.y = y;
 
-        dest.x = x;
-        dest.y = y;
+    if (width == 0 && height == 0) {
         SDL_QueryTexture(texture, NULL, NULL, &dest.w, &dest.h);
-
         SDL_RenderCopy(renderer, texture, NULL, &dest);
+    } else {
+        dest.w = width;
+        dest.h = height;
+        SDL_Rect src = { 0, 0, width, height };
+        SDL_RenderCopy(renderer, texture, &src, &dest);
     }
+}
+
+
 
     void blitRect(SDL_Texture *texture, SDL_Rect *src, int x, int y)
     {
@@ -110,8 +118,8 @@ struct Graphics {
     }
 
     void render(const ScrollingBackground& background) {
-        renderTexture(background.texture, background.scrollingOffset, 0);
-        renderTexture(background.texture, background.scrollingOffset - background.width, 0);
+        renderTexture(background.texture, 0, background.scrollingOffset);
+        renderTexture(background.texture, 0, background.scrollingOffset - background.height);
     }
 };
 

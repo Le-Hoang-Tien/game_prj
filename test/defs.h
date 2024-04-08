@@ -8,4 +8,12 @@
 //#define BACKGROUND_IMG "img\\forest.jpg"
 #define BACKGROUND_IMG "img\\123456.png"
 
+
+struct bullet{
+int bulletX;
+int bulletY;
+int bulletSpeed;
+int bulletWidth=30;
+int bulletHeight=10;
+};
 #endif
