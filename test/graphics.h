@@ -6,6 +6,41 @@
 #include "defs.h"
 #include <vector>
 #include <SDL_mixer.h>
+#include <SDL_ttf.h>
+int lastTickTime = 0;
+int delayTime = 300;
+struct Sprite {
+    SDL_Texture* texture;
+    std::vector<SDL_Rect> clips;
+    int currentFrame = 0;
+
+    void init(SDL_Texture* _texture, int frames, const int _clips [][4]) {
+        texture = _texture;
+
+        SDL_Rect clip;
+        for (int i = 0; i < frames; i++) {
+            clip.x = _clips[i][0];
+            clip.y = _clips[i][1];
+            clip.w = _clips[i][2];
+            clip.h = _clips[i][3];
+            clips.push_back(clip);
+        }
+    }
+    void tick() {
+         int currentTime = SDL_GetTicks();
+        if (currentTime - lastTickTime >= delayTime) {
+        // Thá»±c hiá»‡n cÃ¡c thao tÃ¡c trong hÃ m tick
+        currentFrame = (currentFrame + 1) % clips.size();
+
+        // Cáº­p nháº­t thá»i gian cuá»‘i cÃ¹ng
+        lastTickTime = currentTime;
+    }
+    }
+
+    const SDL_Rect* getCurrentClip() const {
+        return &(clips[currentFrame]);
+    }
+};
 
 struct ScrollingBackground {
     SDL_Texture* texture;
@@ -47,7 +82,7 @@ struct Graphics {
 
         renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED |
                                               SDL_RENDERER_PRESENTVSYNC);
-        //Khi chạy trong máy ảo (ví dụ phòng máy ở trường)
+        //Khi cháº¡y trong mÃ¡y áº£o (vÃ­ dá»¥ phÃ²ng mÃ¡y á»Ÿ trÆ°á»ng)
         //renderer = SDL_CreateSoftwareRenderer(SDL_GetWindowSurface(window));
 
         if (renderer == nullptr) logErrorAndExit("CreateRenderer", SDL_GetError());
@@ -58,6 +93,10 @@ struct Graphics {
    logErrorAndExit( "SDL_mixer could not initialize! SDL_mixer Error: %s\n",
                     Mix_GetError() );
 }
+if (TTF_Init() == -1) {
+            logErrorAndExit("SDL_ttf could not initialize! SDL_ttf Error: ",
+                             TTF_GetError());
+        }
 
     }
 
@@ -99,9 +138,6 @@ void renderTexture(SDL_Texture *texture, int x, int y, int width = 0, int height
         SDL_RenderCopy(renderer, texture, &src, &dest);
     }
 }
-
-
-
     void blitRect(SDL_Texture *texture, SDL_Rect *src, int x, int y)
     {
         SDL_Rect dest;
@@ -118,7 +154,7 @@ void renderTexture(SDL_Texture *texture, int x, int y, int width = 0, int height
     {
         Mix_Quit();
         IMG_Quit();
-
+        TTF_Quit();
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
         SDL_Quit();
@@ -128,6 +164,12 @@ void renderTexture(SDL_Texture *texture, int x, int y, int width = 0, int height
         renderTexture(background.texture, 0, background.scrollingOffset);
         renderTexture(background.texture, 0, background.scrollingOffset - background.height);
     }
+    void renderAni(int x, int y, const Sprite& sprite) {
+        const SDL_Rect* clip = sprite.getCurrentClip();
+        SDL_Rect renderQuad = {x, y, clip->w, clip->h};
+        SDL_RenderCopy(renderer, sprite.texture, clip, &renderQuad);
+    }
+
     Mix_Music *loadMusic(const char* path)
     {
         Mix_Music *gMusic = Mix_LoadMUS(path);
@@ -161,6 +203,38 @@ Mix_Chunk* loadSound(const char* path) {
             Mix_PlayChannel( -1, gChunk, 0 );
         }
     }
+    TTF_Font* loadFont(const char* path, int size)
+    {
+        TTF_Font* gFont = TTF_OpenFont( path, size );
+        if (gFont == nullptr) {
+            SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION,
+                           SDL_LOG_PRIORITY_ERROR,
+                           "Load font %s", TTF_GetError());
+        }
+    }
+ SDL_Texture* renderText(const char* text,
+                            TTF_Font* font, SDL_Color textColor)
+    {
+        SDL_Surface* textSurface =
+                TTF_RenderText_Solid( font, text, textColor );
+        if( textSurface == nullptr ) {
+            SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION,
+                           SDL_LOG_PRIORITY_ERROR,
+                           "Render text surface %s", TTF_GetError());
+            return nullptr;
+        }
+
+        SDL_Texture* texture =
+                SDL_CreateTextureFromSurface( renderer, textSurface );
+        if( texture == nullptr ) {
+            SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION,
+                           SDL_LOG_PRIORITY_ERROR,
+                           "Create texture from text %s", SDL_GetError());
+        }
+        SDL_FreeSurface( textSurface );
+        return texture;
+    }
+
 };
 
 

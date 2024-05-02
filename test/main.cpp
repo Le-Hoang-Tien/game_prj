@@ -5,6 +5,7 @@
 #include "defs.h"
 #include<cstdlib>
 #include <SDL_mixer.h>
+#include <SDL_ttf.h>
 using namespace std;
 bool checkCollison(SDL_Rect& Rect1, SDL_Rect& Rect2){
 if(Rect1.x+Rect1.w<Rect2.x){
@@ -29,6 +30,10 @@ vector <bullet> bull;
 
     int main(int argc, char *argv[])
 {
+    int HighestScore=0;
+    int CurrentScore=0;
+    string HighestScoreString="Highest Score: "+to_string(HighestScore);
+    string CurrentScoreString="Current Score: "+to_string(CurrentScore);
     srand(2);
     int x_enemy = rand()%800;
     double y_enemy = 0;
@@ -36,75 +41,80 @@ vector <bullet> bull;
     double y_enemy2 = 0;
     Graphics graphics;
     graphics.init();
-    Mix_Music *gMusic = graphics.loadMusic("91476_Glorious_morning.mp3");
-    Mix_Chunk *laserShot = graphics.loadSound("mixkit-short-laser-gun-shot-1670.wav");
-    Mix_Chunk *explosionSound = graphics.loadSound("explosionSound.MP3");
+    TTF_Font* font = graphics.loadFont("font/times new roman.ttf",30);
+    SDL_Color color = {255,255, 255, 0};
+    SDL_Texture* highestScore = graphics.renderText(HighestScoreString.c_str(),font, color);
+    SDL_Texture* currentScore = graphics.renderText(CurrentScoreString.c_str(),font, color);
+    Sprite fuel;
+    SDL_Texture* fuel_tex = graphics.loadTexture("image/fuel.png");
+    fuel.init(fuel_tex, fuel_frames, fuel_clip);
+    Mix_Music *gMusic = graphics.loadMusic("sound/91476_Glorious_morning.mp3");
+    Mix_Chunk *laserShot = graphics.loadSound("sound/mixkit-short-laser-gun-shot-1670.wav");
+    Mix_Chunk *explosionSound = graphics.loadSound("sound/explosionSound.MP3");
     graphics.play(gMusic);
     bool isStandingStill = true;
     bool turnLeft=false;
     bool turnRight=false;
     ScrollingBackground background;
-    background.setTexture(graphics.loadTexture("SpaceBackground.jpg"));
-    SDL_Texture*ship_tex=graphics.loadTexture("shipstraight.png");
-    SDL_Texture*ship_right=graphics.loadTexture("shipturnright.png");
-    SDL_Texture*ship_left=graphics.loadTexture("shipturnleft.png");
-    SDL_Texture*enemy_tex=graphics.loadTexture("enemyShip.png");
-    SDL_Texture*bullet_tex=graphics.loadTexture("redLaser.png");
-    SDL_Texture*explode_tex=graphics.loadTexture("explode.png");
-    SDL_Texture*enemy_tex2=graphics.loadTexture("enemyShip.png");
-    SDL_Texture *title=graphics.loadTexture("titleScreen.png");
-    SDL_Texture*endScreen=graphics.loadTexture("endScreen.png");
+    background.setTexture(graphics.loadTexture("image/SpaceBackground.jpg"));
+    SDL_Texture*ship_tex=graphics.loadTexture("image/shipstraight.png");
+    SDL_Texture*ship_right=graphics.loadTexture("image/shipturnright.png");
+    SDL_Texture*ship_left=graphics.loadTexture("image/shipturnleft.png");
+    SDL_Texture*enemy_tex=graphics.loadTexture("image/enemyShip.png");
+    SDL_Texture*bullet_tex=graphics.loadTexture("image/redLaser.png");
+    SDL_Texture*explode_tex=graphics.loadTexture("image/explode.png");
+    SDL_Texture*enemy_tex2=graphics.loadTexture("image/enemyShip.png");
+    SDL_Texture *title=graphics.loadTexture("image/titleScreen.png");
+    SDL_Texture*endScreen=graphics.loadTexture("image/endScreen.png");
     bool quit = false;
-    bool is_shotting = false;
-    bool die=false;
-    bool play=false;
-    SDL_Event event;
-    while(!quit){
-    while((!play)&&(!die)){
+bool is_shotting = false;
+bool die = false;
+bool play = false;
+SDL_Event event;
+int gameState = 0;  // 0: title, 1: play, 2: die
+
+while (!quit) {
+    if (gameState == 0) {
         graphics.prepareScene(title);
         SDL_Event e;
-        while( SDL_PollEvent( &e ) != 0 ) {
-        if(e.type==SDL_KEYDOWN){
-            if(e.key.keysym.sym==SDLK_SPACE){
-                play=true;break;
+        while (SDL_PollEvent(&e) != 0) {
+            if (e.type == SDL_KEYDOWN) {
+                if (e.key.keysym.sym == SDLK_SPACE) {
+                    gameState = 1;  // Chuyển sang trạng thái "play"
+                    break;
+                } else if (e.key.keysym.sym == SDLK_ESCAPE) {
+                    quit = true;
+                }
             }
-            else if(e.key.keysym.sym==SDLK_ESCAPE){
-                quit=true;
-            }
-        }
         }
         graphics.presentScene();
-        if(quit){
-            break;
-        }
-    }
-    while(play) {
-        while( SDL_PollEvent( &event ) != 0 ) {
-            if( event.type == SDL_QUIT ) { quit=true;}
-        else if (event.type == SDL_KEYDOWN) {
-                        switch (event.key.keysym.sym) {
-                            case SDLK_RIGHT:
-                                isStandingStill = false;
-                                turnRight=true;
-                                ship_x += ship_speed;
-                                break;
-                            case SDLK_LEFT:
-                                 isStandingStill = false;
-                                turnLeft=true;
-                                ship_x -= ship_speed;
-                                break;
-                            case SDLK_UP:
-                                ship_y -= ship_speed;
-                                break;
-                            case SDLK_DOWN:
-                                ship_y += ship_speed;
-                                break;
-                            case SDLK_SPACE:
-                                is_shotting = true;
-                                graphics.play(laserShot);
-                                break;
-                        }
-
+    } else if (gameState == 1&&!die) {
+        while (SDL_PollEvent(&event) != 0) {
+            if (event.type == SDL_QUIT) {
+                quit = true;
+            } else if (event.type == SDL_KEYDOWN) {
+                switch (event.key.keysym.sym) {
+                    case SDLK_RIGHT:
+                        isStandingStill = false;
+                        turnRight = true;
+                        ship_x += ship_speed;
+                        break;
+                    case SDLK_LEFT:
+                        isStandingStill = false;
+                        turnLeft = true;
+                        ship_x -= ship_speed;
+                        break;
+                    case SDLK_UP:
+                        ship_y -= ship_speed;
+                        break;
+                    case SDLK_DOWN:
+                        ship_y += ship_speed;
+                        break;
+                    case SDLK_SPACE:
+                        is_shotting = true;
+                        graphics.play(laserShot);
+                        break;
+                }
                     if(ship_x+30>800){
                         ship_x=750;
                     }
@@ -172,14 +182,17 @@ if (isStandingStill) {
                     y_enemy2 = 0 ;
                     x_enemy2 = rand() % 700;
                 }
-        SDL_Rect enemyRect = {x_enemy, y_enemy,100,80};
-        SDL_Rect enemyRect2 = {x_enemy2, y_enemy2,100,80};
-        SDL_Rect playerRect={ship_x,ship_y,100,80};
+        SDL_Rect enemyRect = {x_enemy, y_enemy,90,60};
+        SDL_Rect enemyRect2 = {x_enemy2, y_enemy2,90,60};
+        SDL_Rect playerRect={ship_x,ship_y,90,60};
         for(int i = 0; i < size; i++){
-
                 SDL_Rect bullet_ = {bull[i].bulletX, bull[i].bulletY, 10 , 10};
                 graphics.renderTexture(bullet_tex,bull[i].bulletX,bull[i].bulletY,10,10);
          if(checkCollison(bullet_,enemyRect) == true){
+                    CurrentScore++;
+            if(HighestScore<CurrentScore){
+            HighestScore=CurrentScore;
+         }
                     graphics.play(explosionSound);
                     graphics.renderTexture(explode_tex,x_enemy,y_enemy,200,200);
                     //SDL_Delay(100);
@@ -190,6 +203,10 @@ if (isStandingStill) {
                         size--;
                 }
                 else if(checkCollison(bullet_,enemyRect2) == true){
+                    CurrentScore++;
+                    if(HighestScore<CurrentScore){
+            HighestScore=CurrentScore;
+         }
                     graphics.play(explosionSound);
                     graphics.renderTexture(explode_tex,x_enemy2,y_enemy2,200,200);
                     SDL_Delay(100);
@@ -200,10 +217,22 @@ if (isStandingStill) {
                         size--;
                 }}
             if(checkCollison(playerRect,enemyRect2)||checkCollison(playerRect,enemyRect)){
+                    y_enemy2 = 600;
+                    x_enemy2 = rand()%800;
+            y_enemy = 600;
+                    x_enemy = rand()%800;
+                    SDL_Delay(1000);
+                gameState=2;
                 die=true;
-                play=false;
             }
-
+        HighestScoreString="Highest Score: "+to_string(HighestScore);
+        CurrentScoreString="Current Score: "+to_string(CurrentScore);
+        highestScore = graphics.renderText(HighestScoreString.c_str(),font, color);
+        currentScore = graphics.renderText(CurrentScoreString.c_str(),font, color);
+        graphics.renderTexture(highestScore, 20, 20);
+        graphics.renderTexture(currentScore,20,50);
+            fuel.tick();
+            graphics.renderAni(ship_x+22,ship_y+26, fuel);
                 background.scroll(1);
         graphics.renderTexture(enemy_tex2,x_enemy2,y_enemy2,100,80);
         graphics.renderTexture(enemy_tex,x_enemy,y_enemy,100,80);
@@ -214,27 +243,34 @@ if (isStandingStill) {
        // graphics.presentScene();
         //SDL_Delay(0);
     }
-    while(die){
+else if (gameState == 2) {
+        HighestScoreString="Highest Score: "+to_string(HighestScore);
+        CurrentScoreString="Current Score: "+to_string(CurrentScore);
+        highestScore = graphics.renderText(HighestScoreString.c_str(),font, color);
+        currentScore = graphics.renderText(CurrentScoreString.c_str(),font, color);
         graphics.prepareScene(endScreen);
+        graphics.renderTexture(highestScore, 280, 400);
+        graphics.renderTexture(currentScore,280,430);
         SDL_Event e1;
-        while( SDL_PollEvent( &e1 ) != 0 ) {
-        if(e1.type==SDL_KEYDOWN){
-            if(e1.key.keysym.sym==SDLK_SPACE){
-                die=false;break;break;
-                play=true;break;break;
+        while (SDL_PollEvent(&e1) != 0) {
+            if (e1.type == SDL_KEYDOWN) {
+                if (e1.key.keysym.sym == SDLK_SPACE) {
+                    CurrentScore=0;
+                    gameState = 1;
+                    die=false;
+                    break;
+                } else if (e1.key.keysym.sym == SDLK_ESCAPE) {
+                    quit=true;
+                }
             }
-            else if(e1.key.keysym.sym==SDLK_ESCAPE){
-                quit=true;
-            }
-        }
         }
         graphics.presentScene();
-        if(quit){
-            break;
-        }
     }
-    }
-
+}
+SDL_DestroyTexture( highestScore );
+    TTF_CloseFont( font );
+    highestScore = NULL;
+    SDL_DestroyTexture( fuel_tex ); fuel_tex = nullptr;
     SDL_DestroyTexture( background.texture );
     graphics.quit();
     return 0;
