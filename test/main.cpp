@@ -6,6 +6,7 @@
 #include<cstdlib>
 #include <SDL_mixer.h>
 #include <SDL_ttf.h>
+#include <ctime>
 using namespace std;
 bool checkCollison(SDL_Rect& Rect1, SDL_Rect& Rect2){
 if(Rect1.x+Rect1.w<Rect2.x){
@@ -34,7 +35,7 @@ vector <bullet> bull;
     int CurrentScore=0;
     string HighestScoreString="Highest Score: "+to_string(HighestScore);
     string CurrentScoreString="Current Score: "+to_string(CurrentScore);
-    srand(2);
+    srand(static_cast<unsigned int>(time(nullptr)));
     int x_enemy = rand()%800;
     double y_enemy = 0;
     int x_enemy2 = rand()%800;
@@ -63,16 +64,17 @@ vector <bullet> bull;
     SDL_Texture*enemy_tex=graphics.loadTexture("image/enemyShip.png");
     SDL_Texture*bullet_tex=graphics.loadTexture("image/redLaser.png");
     SDL_Texture*explode_tex=graphics.loadTexture("image/explode.png");
-    SDL_Texture*enemy_tex2=graphics.loadTexture("image/enemyShip.png");
+    SDL_Texture*enemy_tex2=graphics.loadTexture("image/enemyShip2.png");
     SDL_Texture *title=graphics.loadTexture("image/titleScreen.png");
     SDL_Texture*endScreen=graphics.loadTexture("image/endScreen.png");
+
     bool quit = false;
 bool is_shotting = false;
 bool die = false;
 bool play = false;
 SDL_Event event;
 int gameState = 0;  // 0: title, 1: play, 2: die
-
+int enemy_health=2;
 while (!quit) {
     if (gameState == 0) {
         graphics.prepareScene(title);
@@ -203,15 +205,17 @@ if (isStandingStill) {
                         size--;
                 }
                 else if(checkCollison(bullet_,enemyRect2) == true){
-                    CurrentScore++;
-                    if(HighestScore<CurrentScore){
-            HighestScore=CurrentScore;
-         }
-                    graphics.play(explosionSound);
+                        if(enemy_health==0){
+                                graphics.play(explosionSound);
                     graphics.renderTexture(explode_tex,x_enemy2,y_enemy2,200,200);
-                    SDL_Delay(100);
+                    //SDL_Delay(100);
                     y_enemy2 = 600;
                     x_enemy2 = rand()%800;
+                    CurrentScore+=2;
+                    enemy_health=2;}
+                    if(HighestScore<CurrentScore){
+            HighestScore=CurrentScore;
+         }          enemy_health--;
                     bull.erase(bull.begin() + i);
                         i--;
                         size--;
@@ -221,7 +225,6 @@ if (isStandingStill) {
                     x_enemy2 = rand()%800;
             y_enemy = 600;
                     x_enemy = rand()%800;
-                    SDL_Delay(1000);
                 gameState=2;
                 die=true;
             }
@@ -256,6 +259,7 @@ else if (gameState == 2) {
             if (e1.type == SDL_KEYDOWN) {
                 if (e1.key.keysym.sym == SDLK_SPACE) {
                     CurrentScore=0;
+                    enemy_health=2;
                     gameState = 1;
                     die=false;
                     break;

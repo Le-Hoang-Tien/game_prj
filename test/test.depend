@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1714636243 source:c:\users\hoang tien\documents\sdl\game_prj\test\main.cpp
+1714638336 source:c:\users\hoang tien\documents\sdl\game_prj\test\main.cpp
 	<bits/stdc++.h>
 	<SDL.h>
 	<SDL_image.h>
@@ -8,6 +8,7 @@
 	<cstdlib>
 	<SDL_mixer.h>
 	<SDL_ttf.h>
+	<ctime>
 
 1714636309 c:\users\hoang tien\documents\sdl\game_prj\test\graphics.h
 	<SDL.h>
