@@ -31,27 +31,37 @@ vector <bullet> bull;
 
     int main(int argc, char *argv[])
 {
+    int bulletRemain=5;
     int HighestScore=0;
     int CurrentScore=0;
     string HighestScoreString="Highest Score: "+to_string(HighestScore);
     string CurrentScoreString="Current Score: "+to_string(CurrentScore);
+    string RemainingBullet="Remaining Bullets: "+to_string(bulletRemain);
     srand(static_cast<unsigned int>(time(nullptr)));
+    bullet dropBullet1;
+    bullet dropBullet2;
+        dropBullet1.bulletX=rand()%800;
+        dropBullet1.bulletY=-200;
+        dropBullet2.bulletX=rand()%800;
+        dropBullet2.bulletY=-400;
     int x_enemy = rand()%800;
     double y_enemy = 0;
     int x_enemy2 = rand()%800;
-    double y_enemy2 = 0;
+    double y_enemy2 = -150;
     Graphics graphics;
     graphics.init();
     TTF_Font* font = graphics.loadFont("font/times new roman.ttf",30);
     SDL_Color color = {255,255, 255, 0};
     SDL_Texture* highestScore = graphics.renderText(HighestScoreString.c_str(),font, color);
     SDL_Texture* currentScore = graphics.renderText(CurrentScoreString.c_str(),font, color);
+    SDL_Texture* remainingBullets = graphics.renderText(CurrentScoreString.c_str(),font, color);
     Sprite fuel;
     SDL_Texture* fuel_tex = graphics.loadTexture("image/fuel.png");
     fuel.init(fuel_tex, fuel_frames, fuel_clip);
     Mix_Music *gMusic = graphics.loadMusic("sound/91476_Glorious_morning.mp3");
     Mix_Chunk *laserShot = graphics.loadSound("sound/mixkit-short-laser-gun-shot-1670.wav");
     Mix_Chunk *explosionSound = graphics.loadSound("sound/explosionSound.MP3");
+    Mix_Chunk *bullet_up = graphics.loadSound("sound/bullet_up.mp3");
     graphics.play(gMusic);
     bool isStandingStill = true;
     bool turnLeft=false;
@@ -67,7 +77,8 @@ vector <bullet> bull;
     SDL_Texture*enemy_tex2=graphics.loadTexture("image/enemyShip2.png");
     SDL_Texture *title=graphics.loadTexture("image/titleScreen.png");
     SDL_Texture*endScreen=graphics.loadTexture("image/endScreen.png");
-
+    SDL_Texture*dropBullet1_tex=graphics.loadTexture("image/redLaser.png");
+    SDL_Texture*dropBullet2_tex=graphics.loadTexture("image/redLaser.png");
     bool quit = false;
 bool is_shotting = false;
 bool die = false;
@@ -143,8 +154,9 @@ while (!quit) {
                         break;}
                     }
 }
-                    if (is_shotting) {
+                    if (is_shotting&&bulletRemain>0){
                     bullet bullets;
+                    bulletRemain--;
                     bullets.bulletX = ship_x +45 ;
                     bullets.bulletY = ship_y - 10;
                     bullets.bulletSpeed = 10;
@@ -171,13 +183,14 @@ if (isStandingStill) {
         graphics.renderTexture(ship_tex, ship_x, ship_y, 100, 80);}
 
             y_enemy += 2;
-
+            y_enemy2 += 2;
+        dropBullet1.bulletY+=2;
+        dropBullet2.bulletY+=2;
                 if (y_enemy + 30 >= 600) {
 
                     y_enemy = 0 ;
                     x_enemy = rand() % 700;
                 }
-                y_enemy2 += 2;
 
                 if (y_enemy2 + 30 >= 600) {
 
@@ -198,7 +211,7 @@ if (isStandingStill) {
                     graphics.play(explosionSound);
                     graphics.renderTexture(explode_tex,x_enemy,y_enemy,200,200);
                     //SDL_Delay(100);
-                    y_enemy = 600;
+                    y_enemy = 0;
                     x_enemy = rand()%800;
                     bull.erase(bull.begin() + i);
                         i--;
@@ -209,7 +222,7 @@ if (isStandingStill) {
                                 graphics.play(explosionSound);
                     graphics.renderTexture(explode_tex,x_enemy2,y_enemy2,200,200);
                     //SDL_Delay(100);
-                    y_enemy2 = 600;
+                    y_enemy2 = -150;
                     x_enemy2 = rand()%800;
                     CurrentScore+=2;
                     enemy_health=2;}
@@ -221,26 +234,59 @@ if (isStandingStill) {
                         size--;
                 }}
             if(checkCollison(playerRect,enemyRect2)||checkCollison(playerRect,enemyRect)){
-                    y_enemy2 = 600;
+                    y_enemy2 = -150;
                     x_enemy2 = rand()%800;
-            y_enemy = 600;
+                y_enemy = 0;
                     x_enemy = rand()%800;
+                    dropBullet2.bulletX=rand()%800;
+                    dropBullet2.bulletY=-400;
+                    dropBullet1.bulletX=rand()%800;
+                    dropBullet1.bulletY=-200;
                 gameState=2;
                 die=true;
             }
+        if(bulletRemain>=12){
+            bulletRemain=12;
+        }
         HighestScoreString="Highest Score: "+to_string(HighestScore);
         CurrentScoreString="Current Score: "+to_string(CurrentScore);
+        RemainingBullet="Remaining Bullets: "+to_string(bulletRemain);
         highestScore = graphics.renderText(HighestScoreString.c_str(),font, color);
         currentScore = graphics.renderText(CurrentScoreString.c_str(),font, color);
+        remainingBullets = graphics.renderText(RemainingBullet.c_str(),font, color);
+        graphics.renderTexture(remainingBullets, 20,80);
         graphics.renderTexture(highestScore, 20, 20);
         graphics.renderTexture(currentScore,20,50);
             fuel.tick();
             graphics.renderAni(ship_x+22,ship_y+26, fuel);
                 background.scroll(1);
+        SDL_Rect dropBulletRect1={dropBullet1.bulletX,dropBullet1.bulletY,30,10};
+        SDL_Rect dropBulletRect2={dropBullet2.bulletX,dropBullet2.bulletY,30,10};
+        if(checkCollison(dropBulletRect1,playerRect)){
+        dropBullet1.bulletX=rand()%800;
+        dropBullet1.bulletY=-200;
+        bulletRemain+=rand()%3+1;
+        graphics.play(bullet_up);
+        }
+        else if(dropBullet1.bulletY>600){
+        dropBullet1.bulletX=rand()%800;
+        dropBullet1.bulletY=-200;
+        }
+        else if(dropBullet2.bulletY>600){
+        dropBullet2.bulletX=rand()%800;
+        dropBullet2.bulletY=-200;
+        }
+        else if(checkCollison(dropBulletRect2,playerRect)){
+        dropBullet2.bulletX=rand()%800;
+        dropBullet2.bulletY=-400;
+        bulletRemain+=rand()%3+1;
+        graphics.play(bullet_up);
+        }
+        graphics.renderTexture(dropBullet1_tex,dropBullet1.bulletX,dropBullet1.bulletY,30,10);
+        graphics.renderTexture(dropBullet2_tex,dropBullet2.bulletX,dropBullet2.bulletY,30,10);
         graphics.renderTexture(enemy_tex2,x_enemy2,y_enemy2,100,80);
         graphics.renderTexture(enemy_tex,x_enemy,y_enemy,100,80);
         graphics.presentScene();
-
         graphics.render(background);
 
        // graphics.presentScene();
@@ -260,6 +306,7 @@ else if (gameState == 2) {
                 if (e1.key.keysym.sym == SDLK_SPACE) {
                     CurrentScore=0;
                     enemy_health=2;
+                    bulletRemain=5;
                     gameState = 1;
                     die=false;
                     break;
