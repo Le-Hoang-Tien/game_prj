@@ -29,10 +29,10 @@ struct Sprite {
     void tick() {
          int currentTime = SDL_GetTicks();
         if (currentTime - lastTickTime >= delayTime) {
-        // Thá»±c hiá»‡n cÃ¡c thao tÃ¡c trong hÃ m tick
+
         currentFrame = (currentFrame + 1) % clips.size();
 
-        // Cáº­p nháº­t thá»i gian cuá»‘i cÃ¹ng
+
         lastTickTime = currentTime;
     }
     }

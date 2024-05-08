@@ -79,7 +79,7 @@ vector <bullet> bull;
     SDL_Texture*endScreen=graphics.loadTexture("image/endScreen.png");
     SDL_Texture*dropBullet1_tex=graphics.loadTexture("image/redLaser.png");
     SDL_Texture*dropBullet2_tex=graphics.loadTexture("image/redLaser.png");
-    bool quit = false;
+bool quit = false;
 bool is_shotting = false;
 bool die = false;
 bool play = false;
@@ -93,7 +93,7 @@ while (!quit) {
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_KEYDOWN) {
                 if (e.key.keysym.sym == SDLK_SPACE) {
-                    gameState = 1;  // Chuyển sang trạng thái "play"
+                    gameState = 1;
                     break;
                 } else if (e.key.keysym.sym == SDLK_ESCAPE) {
                     quit = true;
@@ -179,11 +179,11 @@ while (!quit) {
             graphics.renderTexture(ship_right, ship_x, ship_y, 100, 80);
           }
 
-if (isStandingStill) {
+          if (isStandingStill) {
         graphics.renderTexture(ship_tex, ship_x, ship_y, 100, 80);}
 
-            y_enemy += 2;
-            y_enemy2 += 2;
+        y_enemy += 2;
+        y_enemy2 += 2;
         dropBullet1.bulletY+=2;
         dropBullet2.bulletY+=2;
                 if (y_enemy + 30 >= 600) {
@@ -209,7 +209,7 @@ if (isStandingStill) {
             HighestScore=CurrentScore;
          }
                     graphics.play(explosionSound);
-                    graphics.renderTexture(explode_tex,x_enemy,y_enemy,200,200);
+                    graphics.renderTexture(explode_tex,x_enemy-30,y_enemy-30,200,200);
                     //SDL_Delay(100);
                     y_enemy = 0;
                     x_enemy = rand()%800;
@@ -220,15 +220,15 @@ if (isStandingStill) {
                 else if(checkCollison(bullet_,enemyRect2) == true){
                         if(enemy_health==0){
                                 graphics.play(explosionSound);
-                    graphics.renderTexture(explode_tex,x_enemy2,y_enemy2,200,200);
+                    graphics.renderTexture(explode_tex,x_enemy2-30,y_enemy2-30,200,200);
                     //SDL_Delay(100);
                     y_enemy2 = -150;
                     x_enemy2 = rand()%800;
                     CurrentScore+=2;
                     enemy_health=2;}
                     if(HighestScore<CurrentScore){
-            HighestScore=CurrentScore;
-         }          enemy_health--;
+                    HighestScore=CurrentScore;}
+                    enemy_health--;
                     bull.erase(bull.begin() + i);
                         i--;
                         size--;
