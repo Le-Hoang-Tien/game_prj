@@ -1,0 +1,3 @@
+Lê Hoàng Tiến-23021695
+Đây là game bắn phi thuyền đơn giản có tên space shooter.
+em đã đọc kĩ yêu cầu của cô cho ngưỡng điểm và xem 1 vài ví dụ game cô đưa, em nghĩ bản than mình có thể được ngưỡng điểm 8-8.5 vì tuy game em ko quá đặc sắc nhưng có đủ yếu tố đồ họa , animation, chuyển động phi thuyền,âm thanh,nhạc nền,...

@@ -62,7 +62,6 @@ vector <bullet> bull;
     Mix_Chunk *laserShot = graphics.loadSound("sound/mixkit-short-laser-gun-shot-1670.wav");
     Mix_Chunk *explosionSound = graphics.loadSound("sound/explosionSound.MP3");
     Mix_Chunk *bullet_up = graphics.loadSound("sound/bullet_up.mp3");
-    graphics.play(gMusic);
     bool isStandingStill = true;
     bool turnLeft=false;
     bool turnRight=false;
@@ -79,10 +78,17 @@ vector <bullet> bull;
     SDL_Texture*endScreen=graphics.loadTexture("image/endScreen.png");
     SDL_Texture*dropBullet1_tex=graphics.loadTexture("image/redLaser.png");
     SDL_Texture*dropBullet2_tex=graphics.loadTexture("image/redLaser.png");
+    SDL_Texture*playButton_tex=graphics.loadTexture("image/playbutton.png");
+    SDL_Texture*soundButtonOn_tex=graphics.loadTexture("image/soundButtonOn.png");
+    SDL_Texture*soundButtonOff_tex=graphics.loadTexture("image/soundButtonOff.png");
 bool quit = false;
 bool is_shotting = false;
 bool die = false;
 bool play = false;
+bool delay=false;
+bool music=true;
+bool musicStopped=false;
+int MouseX,MouseY;
 SDL_Event event;
 int gameState = 0;  // 0: title, 1: play, 2: die
 int enemy_health=2;
@@ -102,7 +108,22 @@ while (!quit) {
         }
         graphics.presentScene();
     } else if (gameState == 1&&!die) {
+        while(delay){
+                SDL_Event ev;
+        SDL_GetMouseState(&MouseX, &MouseY);
+        SDL_PollEvent(&ev);
+        switch (ev.type) {
+            case SDL_QUIT:
+                 exit(0);
+                 break;
+            case SDL_MOUSEBUTTONDOWN:
+                if (MouseX < 770 && MouseX > 720 && MouseY > 0 && MouseY < 70) {
+                    delay=false;
+                }
+                 break;
+        }}
         while (SDL_PollEvent(&event) != 0) {
+            SDL_GetMouseState(&MouseX, &MouseY);
             if (event.type == SDL_QUIT) {
                 quit = true;
             } else if (event.type == SDL_KEYDOWN) {
@@ -153,7 +174,23 @@ while (!quit) {
                             turnRight=false;
                         break;}
                     }
-}
+                      else if (event.type == SDL_MOUSEBUTTONDOWN) {
+                            cout << MouseX << " " << MouseY<<endl;
+                        if (MouseX < 770 && MouseX > 720 && MouseY > 0 && MouseY < 70) {
+                            if (!delay) {
+                                delay = true;
+                            }
+                            }
+                        else if(MouseX<700&&MouseX>650&&MouseY>0&&MouseY<70){
+                            if(music){
+                                music=false;
+                                musicStopped=true;
+                            }
+                        }
+                        }
+                    }
+                    if(music&&!musicStopped){
+                graphics.play(gMusic);}
                     if (is_shotting&&bulletRemain>0){
                     bullet bullets;
                     bulletRemain--;
@@ -286,6 +323,8 @@ while (!quit) {
         graphics.renderTexture(dropBullet2_tex,dropBullet2.bulletX,dropBullet2.bulletY,30,10);
         graphics.renderTexture(enemy_tex2,x_enemy2,y_enemy2,100,80);
         graphics.renderTexture(enemy_tex,x_enemy,y_enemy,100,80);
+        graphics.renderTexture(playButton_tex,700,0,100,100);
+        graphics.renderTexture(soundButtonOn_tex,640,4,100,100);
         graphics.presentScene();
         graphics.render(background);
 
@@ -293,6 +332,9 @@ while (!quit) {
         //SDL_Delay(0);
     }
 else if (gameState == 2) {
+        if(music){
+            graphics.play(gMusic);
+        }
         HighestScoreString="Highest Score: "+to_string(HighestScore);
         CurrentScoreString="Current Score: "+to_string(CurrentScore);
         highestScore = graphics.renderText(HighestScoreString.c_str(),font, color);
