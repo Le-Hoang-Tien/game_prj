@@ -13,7 +13,6 @@ const int fuel_clip[][4] = {
     { 205,0,60,190},
     { 265,0,60,190}};
 const int fuel_frames = sizeof(fuel_clip)/sizeof(int)/4;
-
 struct bullet{
 int bulletX;
 int bulletY;

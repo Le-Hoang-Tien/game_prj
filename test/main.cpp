@@ -40,10 +40,10 @@ vector <bullet> bull;
     srand(static_cast<unsigned int>(time(nullptr)));
     bullet dropBullet1;
     bullet dropBullet2;
-        dropBullet1.bulletX=rand()%800;
-        dropBullet1.bulletY=-200;
-        dropBullet2.bulletX=rand()%800;
-        dropBullet2.bulletY=-400;
+    dropBullet1.bulletX=rand()%800;
+    dropBullet1.bulletY=-200;
+    dropBullet2.bulletX=rand()%800;
+    dropBullet2.bulletY=-400;
     int x_enemy = rand()%800;
     double y_enemy = 0;
     int x_enemy2 = rand()%800;
@@ -86,8 +86,8 @@ bool is_shotting = false;
 bool die = false;
 bool play = false;
 bool delay=false;
-bool music=true;
-bool musicStopped=false;
+bool music=true ;
+bool soundButton=true;
 int MouseX,MouseY;
 SDL_Event event;
 int gameState = 0;  // 0: title, 1: play, 2: die
@@ -96,6 +96,12 @@ while (!quit) {
     if (gameState == 0) {
         graphics.prepareScene(title);
         SDL_Event e;
+        if(music){
+                graphics.play(gMusic);
+            }
+            else{
+                graphics.stop(gMusic);
+            }
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_KEYDOWN) {
                 if (e.key.keysym.sym == SDLK_SPACE) {
@@ -105,7 +111,30 @@ while (!quit) {
                     quit = true;
                 }
             }
+            else if (e.type == SDL_MOUSEBUTTONDOWN) {
+                        SDL_GetMouseState(&MouseX, &MouseY);
+                        cout << MouseX << " " << MouseY<<endl;
+                        if (MouseX < 770 && MouseX > 720 && MouseY > 0 && MouseY < 70) {
+                            if (!delay) {
+                                delay = true;
+                            }
+                            }
+                        else if(MouseX<710&&MouseX>650&&MouseY>0&&MouseY<70){
+                            if(music){
+                                music=false;
+                                soundButton=false;
+                            }
+                            else{
+                                music=true;
+                                soundButton=true;
+                            }
+                    }
+                }
         }
+       if(soundButton) graphics.renderTexture(soundButtonOn_tex,640,4,100,100);
+       else{
+        graphics.renderTexture(soundButtonOff_tex,658,15,70,70);
+       }
         graphics.presentScene();
     } else if (gameState == 1&&!die) {
         while(delay){
@@ -181,16 +210,24 @@ while (!quit) {
                                 delay = true;
                             }
                             }
-                        else if(MouseX<700&&MouseX>650&&MouseY>0&&MouseY<70){
+                        else if(MouseX<710&&MouseX>650&&MouseY>0&&MouseY<70){
                             if(music){
                                 music=false;
-                                musicStopped=true;
+                                soundButton=false;
                             }
-                        }
-                        }
+                            else{
+                                music=true;
+                                soundButton=true;
+                            }
                     }
-                    if(music&&!musicStopped){
-                graphics.play(gMusic);}
+                }
+            }
+            if(music){
+                graphics.play(gMusic);
+            }
+            else{
+                graphics.stop(gMusic);
+            }
                     if (is_shotting&&bulletRemain>0){
                     bullet bullets;
                     bulletRemain--;
@@ -324,7 +361,10 @@ while (!quit) {
         graphics.renderTexture(enemy_tex2,x_enemy2,y_enemy2,100,80);
         graphics.renderTexture(enemy_tex,x_enemy,y_enemy,100,80);
         graphics.renderTexture(playButton_tex,700,0,100,100);
-        graphics.renderTexture(soundButtonOn_tex,640,4,100,100);
+        if(soundButton) graphics.renderTexture(soundButtonOn_tex,640,4,100,100);
+       else{
+        graphics.renderTexture(soundButtonOff_tex,658,15,70,70);
+       }
         graphics.presentScene();
         graphics.render(background);
 
@@ -332,9 +372,6 @@ while (!quit) {
         //SDL_Delay(0);
     }
 else if (gameState == 2) {
-        if(music){
-            graphics.play(gMusic);
-        }
         HighestScoreString="Highest Score: "+to_string(HighestScore);
         CurrentScoreString="Current Score: "+to_string(CurrentScore);
         highestScore = graphics.renderText(HighestScoreString.c_str(),font, color);
@@ -342,6 +379,10 @@ else if (gameState == 2) {
         graphics.prepareScene(endScreen);
         graphics.renderTexture(highestScore, 280, 400);
         graphics.renderTexture(currentScore,280,430);
+        if(soundButton) graphics.renderTexture(soundButtonOn_tex,640,4,100,100);
+       else{
+        graphics.renderTexture(soundButtonOff_tex,658,15,70,70);
+       }
         SDL_Event e1;
         while (SDL_PollEvent(&e1) != 0) {
             if (e1.type == SDL_KEYDOWN) {
@@ -356,7 +397,32 @@ else if (gameState == 2) {
                     quit=true;
                 }
             }
+            else if (e1.type == SDL_MOUSEBUTTONDOWN) {
+                        SDL_GetMouseState(&MouseX, &MouseY);
+                        cout << MouseX << " " << MouseY<<endl;
+                        if (MouseX < 770 && MouseX > 720 && MouseY > 0 && MouseY < 70) {
+                            if (!delay) {
+                                delay = true;
+                            }
+                            }
+                        else if(MouseX<710&&MouseX>650&&MouseY>0&&MouseY<70){
+                            if(music){
+                                music=false;
+                                soundButton=false;
+                            }
+                            else{
+                                music=true;
+                                soundButton=true;
+                            }
+                    }
+                }
         }
+        if(music){
+                graphics.play(gMusic);
+            }
+            else{
+                graphics.stop(gMusic);
+            }
         graphics.presentScene();
     }
 }

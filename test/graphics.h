@@ -191,6 +191,11 @@ void renderTexture(SDL_Texture *texture, int x, int y, int width = 0, int height
             Mix_ResumeMusic();
         }
     }
+    void stop(Mix_Music *gMusic) {
+    if (gMusic == nullptr) return;
+
+    Mix_PauseMusic();
+}
 Mix_Chunk* loadSound(const char* path) {
         Mix_Chunk* gChunk = Mix_LoadWAV(path);
         if (gChunk == nullptr) {
