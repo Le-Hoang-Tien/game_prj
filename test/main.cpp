@@ -32,7 +32,7 @@ vector <bullet> bull;
     int main(int argc, char *argv[])
 {
     int bulletRemain=5;
-    int HighestScore=0;
+    int HighestScore=loadHighscore();
     int CurrentScore=0;
     string HighestScoreString="Highest Score: "+to_string(HighestScore);
     string CurrentScoreString="Current Score: "+to_string(CurrentScore);
@@ -281,6 +281,7 @@ while (!quit) {
                     CurrentScore++;
             if(HighestScore<CurrentScore){
             HighestScore=CurrentScore;
+            saveHighscore(HighestScore);
          }
                     graphics.play(explosionSound);
                     graphics.renderTexture(explode_tex,x_enemy-30,y_enemy-30,200,200);
@@ -301,7 +302,8 @@ while (!quit) {
                     CurrentScore+=2;
                     enemy_health=2;}
                     if(HighestScore<CurrentScore){
-                    HighestScore=CurrentScore;}
+                    HighestScore=CurrentScore;
+                    saveHighscore(HighestScore);}
                     enemy_health--;
                     bull.erase(bull.begin() + i);
                         i--;
